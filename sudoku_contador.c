@@ -151,11 +151,26 @@ void* sudoku_solver(void* args){
 	}
 	printf("%u\n", ind);
 	printf("%u", solutions);
+	pthread_exit((void*)solutions);
 }
 
 int main(){
-	struct myData data = {10,0,4};
-	sudoku_solver((void*)&data);
+	unsigned int _size=4;
+	pthread_t threads[_size];
+	struct myData data[_size];
+	for(int i=0; i<_size; i++){
+		data[i].start_value = i+1;
+		data[i].start_ind = 0;
+		data[i].size = _size;
+		pthread_create(&threads[i],NULL,sudoku_solver,(void*)&(data[0]));
+	}
+	
+	unsigned int return_var;
+	unsigned int sum_solutions=0;
+	for(int i=0; i<_size; i++){
+		pthread_join(threads[i],(void**)return_var);
+		sum_solutions += *((int*)return_var);
+	}
 }
 
 
