@@ -99,8 +99,10 @@ void deep_copy(int size, int array[]){
 }
 
 void* sudoku_solver(void* args){
-	int start_value = ((struct myData*)args)->start_value;
-	int start_ind = ((struct myData*)args)->start_ind;
+	printf("Created thread!\n");
+	fflush(stdout);
+	unsigned int start_value = ((struct myData*)args)->start_value;
+	unsigned int start_ind = ((struct myData*)args)->start_ind;
 	unsigned int size = ((struct myData*)args)->size;
 	unsigned int size_sq = size*size;
 	unsigned int size_cb = size*size_sq;
@@ -144,22 +146,25 @@ void* sudoku_solver(void* args){
 			ind--;
 		}
 	}
-	printf("%u\n", ind);
-	printf("%u", solutions);
+	printf("Done with %u\n",start_value);
+	fflush(stdout);
 	pthread_exit((void*)solutions);
 }
 
 int main(){
 	unsigned int _size=4;
-	pthread_t threads[_size];
-	struct myData data[_size];
-	for(int i=0; i<_size; i++){
+	pthread_t threads[_size*_size];
+	struct myData data[_size*_size];
+	printf("Creating threads\n");
+	fflush(stdout);
+	for(int i=0; i<_size*_size; i++){
 		data[i].start_value = i+1;
 		data[i].start_ind = 0;
 		data[i].size = _size;
 		pthread_create(&threads[i],NULL,sudoku_solver,(void*)&(data[0]));
 	}
-	
+	printf("Created threads\n");
+	fflush(stdout);
 	unsigned int return_var;
 	unsigned int sum_solutions=0;
 	for(int i=0; i<_size; i++){
