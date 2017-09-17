@@ -43,9 +43,6 @@ int sudo[] = {
 };
 
 
-	
-unsigned int solutions = 0;
-
 bool valid_in_row(int* array, int x, int index, unsigned int size_sq){
 	for(int i = 0; i<size_sq; i++){
 		if(array[(index/size_sq)*size_sq + i] == x){
@@ -114,6 +111,7 @@ void* sudoku_solver(void* args){
 	unsigned int ind = start_ind+1;
 	bool found = true;
 	unsigned int contador = 0;
+	unsigned int solutions = 0;
 	while(ind < size_qd && ind>start_ind){
 		++contador;
 		if(sudo[ind] == 0){
@@ -144,9 +142,6 @@ void* sudoku_solver(void* args){
 				sudo_r[ind] = 0;
 			}
 			ind--;
-		}
-		if(!(contador%500000)){
-			print_sudoku(sudo_r,size);
 		}
 	}
 	printf("%u\n", ind);
