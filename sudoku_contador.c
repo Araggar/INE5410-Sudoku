@@ -20,26 +20,26 @@ int sudo[] = {
 		0,5,0,8,0,3,0,7,0,
 		0,0,7,0,0,0,0,0,0,
 		4,0,0,0,0,0,0,0,0
-	};
-	*/
+	};*/
+	
 	
 int sudo[] = {
-	0,0,0,15,9,0,16,0,0,6,0,0,13,7,0,0,
-	0,13,6,0,0,15,0,0,7,0,0,4,8,0,0,0,
-	2,0,0,0,0,0,0,13,15,0,10,0,0,3,9,0,
-	7,0,5,6,3,0,0,0,12,0,0,0,0,14,11,
-	0,5,0,0,0,11,8,0,0,0,0,15,3,0,0,0,
-	0,6,0,1,10,0,5,0,11,0,2,0,12,14,0,0,
-	0,0,16,0,0,0,0,3,12,0,0,8,0,6,7,0,
-	3,0,0,10,0,6,0,0,0,13,1,0,0,0,0,8,
-	12,0,0,0,0,5,2,0,0,0,8,0,0,15,1,0,
-	0,0,1,9,4,0,0,0,0,15,0,0,7,0,0,0,
-	0,8,2,0,3,0,0,16,0,14,7,0,0,0,0,5,
-	0,7,0,0,0,0,15,6,1,0,0,10,0,12,8,0,
-	8,0,0,13,16,0,0,11,0,0,15,0,0,0,4,7,
-	0,9,0,0,0,0,7,0,0,11,0,16,14,0,0,0,
-	0,11,3,0,15,12,0,0,8,0,0,0,0,10,0,0,
-	1,0,4,0,0,0,3,0,0,2,0,6,16,0,0,15
+	 0, 0, 0,15, 9, 0,16, 0, 0, 6, 0, 0,13, 7, 0, 0,
+	 0,13, 6, 0, 0,15, 0, 0, 7, 0, 0, 4, 8, 0, 0, 0,
+	 2, 0, 0, 0, 0, 0, 0,13,15, 0,10, 0, 0, 3, 9, 0,
+	 7, 0, 5, 0, 6, 3, 0, 0, 0,12, 0, 0, 0, 0,14,11,
+	 0, 5, 0, 0, 0,11, 8, 0, 0, 0, 0,15, 3, 0, 0, 0,
+	 0, 6, 0, 1,10, 0, 5, 0,11, 0, 2, 0,12,14, 0, 0,
+	 0, 0,16, 0, 0, 0, 0, 3,12, 0, 0, 8, 0, 6, 7, 0,
+	 3, 0, 0,10, 0, 6, 0, 0, 0,13, 1, 0, 0, 0, 0, 8,
+	12, 0, 0, 0, 0, 5, 2, 0, 0, 0, 8, 0, 0,15, 1, 0,
+	 0, 0, 1, 9, 4, 0, 0, 0, 0,15, 0, 0, 7, 0, 0, 0,
+	 0, 8, 2, 0, 3, 0, 0,16, 0,14, 7, 0, 0, 0, 0, 5,
+	 0, 7, 0, 0, 0, 0,15, 6, 1, 0, 0,10, 0,12, 8, 0,
+	 8, 0, 0,13,16, 0, 0,11, 0, 0,15, 0, 0, 0, 4, 7,
+	 0, 9, 0, 0, 0, 0, 7, 0, 0,11, 0,16, 4, 0, 0, 0,
+	 0,11, 3, 0,15,12, 0, 0, 8, 0, 0, 0, 0,10, 0, 0,
+	 1, 0, 4, 0, 0, 0, 3, 0, 0, 2, 0, 6,16, 0, 0,15
 };
 
 
@@ -99,7 +99,7 @@ void deep_copy(int size, int array[]){
 }
 
 void* sudoku_solver(void* args){
-	printf("Created thread!\n");
+	
 	fflush(stdout);
 	unsigned int start_value = ((struct myData*)args)->start_value;
 	unsigned int start_ind = ((struct myData*)args)->start_ind;
@@ -108,46 +108,55 @@ void* sudoku_solver(void* args){
 	unsigned int size_cb = size*size_sq;
 	unsigned int size_qd = size*size_cb;
 	int sudo_r[size_qd];
-	deep_copy(size_qd, sudo_r);
-	sudo_r[start_ind] = start_value;
-	unsigned int ind = start_ind+1;
-	bool found = true;
-	unsigned int contador = 0;
 	unsigned int solutions = 0;
-	while(ind < size_qd && ind>start_ind){
-		++contador;
-		if(sudo[ind] == 0){
-			found = false;
-			for(int n = sudo_r[ind] + 1; n<size_sq+1; n++){
-				if(valid_in_row(sudo_r,n,ind,size_sq) & valid_in_col(sudo_r,n,ind,size_sq) & valid_in_sq(sudo_r,n,ind,size)){
-					sudo_r[ind] = n;
-					found = true;
-					break;
+	deep_copy(size_qd, sudo_r);
+	printf("Created thread %u\n", start_value);
+	if(valid_in_row(sudo_r,start_value,start_ind,size_sq) & valid_in_col(sudo_r,start_value,start_ind,size_sq) & valid_in_sq(sudo_r,start_value,start_ind,size)){
+		sudo_r[start_ind] = start_value;
+		unsigned int ind = start_ind+1;
+		bool found = true;
+		unsigned int contador = 0;
+		
+		while(ind < size_qd && ind>start_ind){
+			++contador;
+			if(sudo[ind] == 0){
+				found = false;
+				for(int n = sudo_r[ind] + 1; n<size_sq+1; n++){
+					if(valid_in_row(sudo_r,n,ind,size_sq) & valid_in_col(sudo_r,n,ind,size_sq) & valid_in_sq(sudo_r,n,ind,size)){
+						sudo_r[ind] = n;
+						found = true;
+						break;
+					}
 				}
+			} else {
+				sudo_r[ind] = sudo[ind];
 			}
-		} else {
-			sudo_r[ind] = sudo[ind];
-		}
-		if(found){
-			if(ind==size_qd-1){
+			if(found){
+				if(ind==size_qd-1){
+					if(sudo[ind]==0){
+						sudo_r[ind] = 0;
+					}
+					ind--;
+					solutions++;
+					printf("%u\n",solutions);
+					fflush(stdout);
+				} else {
+					ind++;
+				}
+			} else {
 				if(sudo[ind]==0){
 					sudo_r[ind] = 0;
 				}
 				ind--;
-				solutions++;
-				print_sudoku(sudo_r,size);
-			} else {
-				ind++;
 			}
-		} else {
-			if(sudo[ind]==0){
-				sudo_r[ind] = 0;
-			}
-			ind--;
+			/*if(contador%5000000 == 0){
+				print_sudoku(sudo_r, size);
+				fflush(stdout);
+			}*/
 		}
 	}
-	printf("Done with %u\n",start_value);
-	fflush(stdout);
+		printf("Done with %u\n",start_value);
+		fflush(stdout);
 	pthread_exit((void*)solutions);
 }
 
@@ -161,16 +170,19 @@ int main(){
 		data[i].start_value = i+1;
 		data[i].start_ind = 0;
 		data[i].size = _size;
-		pthread_create(&threads[i],NULL,sudoku_solver,(void*)&(data[0]));
+		pthread_create(&threads[i],NULL,sudoku_solver,(void*)&(data[i]));
 	}
 	printf("Created threads\n");
 	fflush(stdout);
-	unsigned int return_var;
+	void* return_var;
 	unsigned int sum_solutions=0;
-	for(int i=0; i<_size; i++){
-		pthread_join(threads[i],(void**)return_var);
-		sum_solutions += *((int*)return_var);
+	for(int i=0; i<_size*_size; i++){
+		pthread_join(threads[i],&return_var);
+		fflush(stdout);
+		sum_solutions += (unsigned int)return_var;
 	}
+	printf("%u\n", sum_solutions);
+	fflush(stdout);
 }
 
 
