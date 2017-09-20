@@ -4,9 +4,9 @@
 
 typedef struct StructData {
 	int* state;
-	int size;
-	int start_value;
-	int start_ind;
+	unsigned int size;
+	unsigned int start_value;
+	unsigned int start_ind;
 } Data;
 
 typedef struct node_t
