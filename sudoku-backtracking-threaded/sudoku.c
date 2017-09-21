@@ -22,7 +22,7 @@ Stack s;
 unsigned int max_threads = 4;
 unsigned int solutions = 0;
 pthread_mutex_t s_mutex;
-/*
+
 int sudo[] = {
 		0,3,0,0,6,0,0,0,5,
 		0,0,0,0,5,0,0,0,0,
@@ -33,7 +33,7 @@ int sudo[] = {
 		0,5,0,8,0,3,0,7,0,
 		0,0,7,0,0,0,0,0,0,
 		4,0,0,0,0,0,0,0,0
-	};*/
+	};
 /*
 int sudo[] = {
 		0,0,0,0,0,0,0,0,0,
@@ -57,7 +57,7 @@ int sudo[] = {
 		5,0,0,6,0,0,3,4,0,
 		3,4,0,2,0,0,0,0,0
 		
-	};*/
+	};*//*
 	int sudo[] = {
 	 1, 3, 8,15, 9, 0,16, 0, 0, 6, 0, 0,13, 7, 0, 0,
 	 0,13, 6, 0, 0,15, 0, 0, 7, 0, 0, 4, 8, 0, 0, 0,
@@ -78,7 +78,7 @@ int sudo[] = {
 	 0, 9, 0, 0, 0, 0, 7, 0, 0,11, 0,16, 14, 0, 0, 0,
 	 0,11, 3, 0,15,12, 0, 0, 8, 0, 0, 0, 0,10, 0, 0,
 	 1, 0, 4, 0, 0, 0, 3, 0, 0, 2, 0, 6,16, 0, 0,15
-};
+};*/
 /*
 	int sudo[] = {
 	 0, 0, 0,15, 9, 0,16, 0, 0, 6, 0, 0,13, 7, 0, 0,
@@ -140,8 +140,8 @@ int sudo[] = {
  0, 15, 10, 9  ,16 ,11 ,14 ,1 , 4 ,7 ,6 ,13 , 8, 3 ,2 ,5 ,
  16, 11, 14, 13 , 12 ,15 ,10 ,9  ,8 ,3 ,2 ,5 , 4, 7, 6, 1 
 };
-
 */
+
 
 bool valid_in_row(int* array, int x, int index, unsigned int size_sq){
 	for(int i = 0; i<size_sq; i++){
@@ -261,7 +261,7 @@ void* sudoku_solver(void* args){
 
 int main(){
 	stackinit(&s);
-	unsigned int sudo_size = 4;
+	unsigned int sudo_size = 3;
 	sem_init(&semaphore, 0, 1000);
 	sem_init(&semaphoreConsumidor, 0, 0);
 	sem_init(&semaphoreCont, 0, 1);
@@ -292,7 +292,8 @@ int main(){
 		while(!(s.size == 0)) {
 			sem_wait(&semaphore);
 			sem_getvalue(&semaphoreConsumidor, &sem_check);
-			//printf("%u!\n", sem_check);
+			printf("%i  -  %i\n", sem_check, s.size);
+			fflush(stdout);
 			pthread_t temp_thread;
 			thread_ptr = &temp_thread;
 			pthread_create(thread_ptr, NULL, sudoku_solver, (void*)stackpop(&s));
@@ -302,8 +303,8 @@ int main(){
 			sem_post(&semaphoreConsumidor);
 		};
 		sem_getvalue(&semaphoreConsumidor, &sem_check);
-		printf("%Huh!\n", sem_check);
-		printf("Sem - %u! : Stack - %u\n", sem_check, s.size);
+		//printf("Sem - %u! : Stack - %u\n", sem_check, s.size);
+		fflush(stdout);
 	} while(sem_check>0);
 	printf("%u!\n", solutions);
 	fflush(stdout);
