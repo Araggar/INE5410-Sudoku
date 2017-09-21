@@ -22,7 +22,7 @@ Stack s;
 unsigned int max_threads = 4;
 unsigned int solutions = 0;
 pthread_mutex_t s_mutex;
-
+/*
 int sudo[] = {
 		0,3,0,0,6,0,0,0,5,
 		0,0,0,0,5,0,0,0,0,
@@ -33,7 +33,7 @@ int sudo[] = {
 		0,5,0,8,0,3,0,7,0,
 		0,0,7,0,0,0,0,0,0,
 		4,0,0,0,0,0,0,0,0
-	};
+	};*/
 /*
 int sudo[] = {
 		0,0,0,0,0,0,0,0,0,
@@ -57,7 +57,7 @@ int sudo[] = {
 		5,0,0,6,0,0,3,4,0,
 		3,4,0,2,0,0,0,0,0
 		
-	};*//*
+	};*/
 	int sudo[] = {
 	 1, 3, 8,15, 9, 0,16, 0, 0, 6, 0, 0,13, 7, 0, 0,
 	 0,13, 6, 0, 0,15, 0, 0, 7, 0, 0, 4, 8, 0, 0, 0,
@@ -78,7 +78,7 @@ int sudo[] = {
 	 0, 9, 0, 0, 0, 0, 7, 0, 0,11, 0,16, 14, 0, 0, 0,
 	 0,11, 3, 0,15,12, 0, 0, 8, 0, 0, 0, 0,10, 0, 0,
 	 1, 0, 4, 0, 0, 0, 3, 0, 0, 2, 0, 6,16, 0, 0,15
-};*/
+};
 /*
 	int sudo[] = {
 	 0, 0, 0,15, 9, 0,16, 0, 0, 6, 0, 0,13, 7, 0, 0,
@@ -223,7 +223,8 @@ void* sudoku_solver(void* args){
 		sem_wait(&semaphoreCont);
 		solutions++;
 		fflush(stdout);
-		//printf("%u!!!\n", solutions);
+		printf("%u!!!\n", solutions);
+		fflush(stdout);
 		sem_post(&semaphoreCont);
 		sem_post(&semaphore);
 		sem_wait(&semaphoreConsumidor);
@@ -260,8 +261,8 @@ void* sudoku_solver(void* args){
 
 int main(){
 	stackinit(&s);
-	unsigned int sudo_size = 3;
-	sem_init(&semaphore, 0, 100);
+	unsigned int sudo_size = 4;
+	sem_init(&semaphore, 0, 1000);
 	sem_init(&semaphoreConsumidor, 0, 0);
 	sem_init(&semaphoreCont, 0, 1);
 	sem_init(&semaphoreP, 0, 1);
