@@ -23,12 +23,12 @@ sem_t semaphoreCont;
 pthread_barrier_t barrier;
 Stack s;
 
-unsigned int max_threads = 200;
+unsigned int max_threads = 1000;
 unsigned int solutions = 0;
 pthread_mutex_t s_mutex;
 
 
-int sudo[] = {
+/*int sudo[] = {
 		0,3,0,0,6,0,0,0,5,
 		0,0,0,0,5,0,0,0,0,
 		0,0,6,1,0,7,9,0,0,
@@ -38,7 +38,7 @@ int sudo[] = {
 		0,5,0,8,0,3,0,7,0,
 		0,0,7,0,0,0,0,0,0,
 		4,0,0,0,0,0,0,0,0
-	};
+	};*/
 /*
 int sudo[] = {
 		0,2,3,4,5,6,7,8,0,
@@ -64,7 +64,7 @@ int sudo[] = {
 		3,4,0,2,0,0,0,0,0
 		
 	};*/
-	/*
+/*	
 	int sudo[] = {
 	 1, 3, 8,15, 9, 0,16, 0, 0, 6, 0, 0,13, 7, 0, 0,
 	 0,13, 6, 0, 0,15, 0, 0, 7, 0, 0, 4, 8, 0, 0, 0,
@@ -86,7 +86,7 @@ int sudo[] = {
 	 0,11, 3, 0,15,12, 0, 0, 8, 0, 0, 0, 0,10, 0, 0,
 	 1, 0, 4, 0, 0, 0, 3, 0, 0, 2, 0, 6,16, 0, 0,15
 };*/
-/*
+
 	int sudo[] = {
 	 0, 0, 0,15, 9, 0,16, 0, 0, 6, 0, 0,13, 7, 0, 0,
 	 0,13, 6, 0, 0,15, 0, 0, 7, 0, 0, 4, 8, 0, 0, 0,
@@ -107,7 +107,7 @@ int sudo[] = {
 	 0, 9, 0, 0, 0, 0, 7, 0, 0,11, 0,16, 14, 0, 0, 0,
 	 0,11, 3, 0,15,12, 0, 0, 8, 0, 0, 0, 0,10, 0, 0,
 	 1, 0, 4, 0, 0, 0, 3, 0, 0, 2, 0, 6,16, 0, 0,15
-};*/
+};
 
 /*	int sudo[] = {
 	0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0,0,0, 0, 0,
@@ -128,24 +128,24 @@ int sudo[] = {
 	0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0,0,0, 0, 0,
 };*/
 
-/*
-int sudo[] = {
+
+/*int sudo[] = {
  0, 1 ,3 ,4, 5, 6, 7, 8,  9, 10, 11, 12,  13, 14, 15, 16, 
  5 ,6 ,7 ,8,1 ,2 ,3 ,4  ,13 ,14 ,15 ,16 , 9 ,10, 11, 12 ,
- 9 ,10 ,11 ,12 , 13, 14 ,15, 16,  1 ,2 ,3 ,4 , 5, 6, 7, 8 ,
- 13, 14, 15, 16,  9, 10 ,11 ,12  ,5, 6, 7 ,8  ,1 ,2 ,3 ,4 ,
- 0 ,2, 4, 3 , 6 ,5, 8, 7 , 10, 9 ,12 ,11 ,14 ,13 ,16 ,15, 
- 6 ,5, 8, 7 , 2 ,1, 4, 3  ,14 ,13 ,16 ,15 ,10, 9 ,12, 11 ,
- 10, 9 ,12 ,11 , 14, 13, 16, 15, 2, 1, 4, 3,  6, 5, 8, 7, 
- 0, 13, 16, 15,  10, 9 ,12 ,11, 6, 5, 8, 0,  2 ,1, 4 ,3, 
- 3 ,4 ,1, 2 , 7 ,8, 5 ,6,  11, 0 ,9 ,10, 15, 16, 13, 14, 
- 7 ,8 ,5, 6 , 3 ,4, 1 ,0 , 15, 16, 13, 14, 11, 12, 9, 10 ,
- 0, 12, 9 ,10 , 15 ,16 ,13, 14 , 3 ,4 ,1 ,2 ,7 ,8 ,5 ,6, 
- 15, 16, 13, 14,  11 ,12 ,9 ,0  ,7 ,8 ,5 ,6 ,3 ,4,1, 2, 
- 4 ,3 ,2, 1 , 8 ,7 ,6, 0,  12, 11 ,10, 9 , 16, 15, 14 ,13, 
- 8 ,7 ,6, 5 , 4 ,0 ,2 ,13 , 16 ,15 ,14 ,1  ,12 ,11 ,10, 9 ,
- 0, 15, 10, 9  ,16 ,11 ,14 ,1 , 4 ,7 ,6 ,13 , 8, 3 ,2 ,5 ,
- 16, 11, 14, 13 , 12 ,15 ,10 ,9  ,8 ,3 ,2 ,5 , 4, 7, 6, 1 
+ 9 ,10 ,11 ,12 , 13, 14 ,15, 16,  1 ,2 ,3 ,4 , 0, 6, 7, 8 ,
+ 13, 14, 15, 16,  9, 10 ,11 ,12  ,5, 6, 7 ,0  ,1 ,2 ,3 ,4 ,
+ 0 ,2, 4, 3 , 6 ,0, 0, 7 , 10, 9 ,12 ,11 ,0 ,0 ,16 ,15, 
+ 6 ,5, 8, 7 , 2 ,0, 0, 3  ,14 ,13 ,16 ,15 ,0, 0 ,12, 11 ,
+ 10, 9 ,12 ,11 , 14, 0, 16, 15, 2, 1, 4, 3,  0, 5, 8, 7, 
+ 0, 13, 16, 15,  10, 0 ,12 ,0, 6, 5, 8, 0,  0 ,1, 4 ,3, 
+ 3 ,4 ,1, 2 , 0 ,8, 0 ,6,  0, 0 ,9 ,0, 0, 0, 0, 14, 
+ 7 ,0 ,0, 6 , 3 ,4, 0 ,0 , 0, 0, 0, 0, 0, 0, 9, 10 ,
+ 0, 0, 0 ,10 , 15 ,0 ,0, 0 , 0 ,0 ,0 ,0 ,7 ,8 ,5 ,6, 
+ 15, 0, 0, 0,  11 ,0 ,9 ,0  ,7 ,8 ,5 ,6 ,3 ,4,1, 2, 
+ 0 ,0 ,0, 0 , 0 ,0 ,0, 0,  0, 0 ,0, 0 , 0, 0, 14 ,13, 
+ 0 ,0 ,0, 0 , 0 ,0 ,0 ,0 , 0,0 ,0 ,0  ,0 ,0 ,10, 9 ,
+ 0, 0, 0, 0  , 0 ,0 ,0 ,0 , 0 , 0 ,6 ,13 , 8, 3 ,2 ,5 ,
+ 16, 11, 14, 13 , 0 ,0 ,0 ,0  ,0 ,0 ,0 ,5 , 4, 7, 6, 1 
 };*/
 
 
@@ -200,26 +200,14 @@ void print_sudoku(int* array, unsigned int size){
 	printf("|\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
 	sem_post(&semaphoreP);
 }
-/*
-void deep_copy(int size, int array[], int array_from[]){
-	for(int i=0;i<size;i++){
-		array[i] = array_from[i];
-	}						
-}
-*/
+
 void* sudoku_solver(void* args){
-	Data *stack;
+
 	int* sudo_r;
-	unsigned int start_ind;
-	unsigned int size;
-	unsigned int size_sq;
-	unsigned int size_cb;
-	unsigned int size_qd;
-	unsigned int line;
-	unsigned int ind;
 	int sem_check;
 	bool found;
 	int next;
+
 	while(1){
 		
 		sem_getvalue(&semaphoreSentinela, &sem_check);
@@ -242,24 +230,17 @@ void* sudoku_solver(void* args){
 		memcpy(sudo_r, stack->state, sizeof(int)*size_qd);
 		unsigned int ind = start_ind;
 		fflush(stdout);
-		//print_sudoku(sudo_r,size);
-		//				fflush(stdout);
-		//print_sudoku(sudo_r, size);
-		//printf("Created thread, ind: %u - value: %u\n", start_ind, start_value);
+		found = true;
 		next = true;
 		while(ind/size_sq == line){
 			if(stack->state[ind]==0){
 				found = false;
-				for(int n = sudo_r[ind]+1; n<size_sq+1; n++){
+				for(int n = sudo_r[ind]+1; n < size_sq+1; n++){
 					if(valid_in_row(sudo_r, n, ind, size_sq) & 
 						valid_in_col(sudo_r, n, ind, size_sq) & 
 						valid_in_sq(sudo_r, n, ind, size)){
 							found = true;
 							sudo_r[ind] = n;
-							//print_sudoku(sudo_r, size);
-							//fflush(stdout);
-						//print_sudoku(sudo_r,size);
-						//printf("%u\n", ind);
 							break;
 					}
 				}
@@ -269,17 +250,10 @@ void* sudoku_solver(void* args){
 				if(ind == size_qd-1){
 						sem_wait(&semaphoreCont);
 						solutions++;
-						//printf("%u!!!\n", solutions);
-						//print_sudoku(sudo_r, size);
-						//fflush(stdout);
 						sem_post(&semaphoreCont);
 						next=false;
 				} else {
-					//printf("SEG1!!!\n", solutions);
-					//	fflush(stdout);
 					if((ind+1)/size_sq > line){
-						//printf("Dead?\n");
-						//fflush(stdout);
 						int* temp_sudoku = malloc(sizeof(int) * size_qd);
 						memcpy(temp_sudoku, sudo_r, sizeof(int) * size_qd);
 						Data* temp = malloc(sizeof(Data));
@@ -288,29 +262,19 @@ void* sudoku_solver(void* args){
 						temp->start_ind = ind+1;
 						stackpush(&s, temp);;
 						sem_post(&semaphoreConsumidor);
-						//		print_sudoku(sudo_r,size);
-						//fflush(stdout);
-						//printf("%u\n", ind+1);
-						//fflush(stdout);
-						//print_sudoku(sudo_r,size);
-						//printf("Stack\n");
-						//fflush(stdout);
 						next=false;
 					}
 				}
 			}
 			if (next) {
 				ind++;
-			}else{
+			} else {
 				if(stack->state[ind]==0){
 					sudo_r[ind] = 0;
 				}
 				ind--;
 			}
 		}
-		//print_sudoku(sudo_r,size);
-		//printf("%u\n", ind);
-		//fflush(stdout);
 		free(stack->state);
 		free(sudo_r);
 		sem_wait(&semaphoreSentinela);
@@ -319,7 +283,7 @@ void* sudoku_solver(void* args){
 
 int main(){
 	stackinit(&s);
-	unsigned int sudo_size = 3;
+	unsigned int sudo_size = 4;
 	unsigned int sudo_size_4 = sudo_size*sudo_size*sudo_size*sudo_size;
 	sem_init(&semaphoreConsumidor, 0, 1);
 	sem_init(&semaphoreSentinela, 0, max_threads);
