@@ -23,7 +23,7 @@ sem_t semaphoreCont;
 pthread_barrier_t barrier;
 Stack s;
 
-unsigned int max_threads = 2;
+unsigned int max_threads = 200;
 unsigned int solutions = 0;
 pthread_mutex_t s_mutex;
 
@@ -224,7 +224,10 @@ void* sudoku_solver(void* args){
 		
 		sem_getvalue(&semaphoreSentinela, &sem_check);
 		if(s.size==0 && sem_check==max_threads){
-			pthread_exit(NULL);
+			sem_wait(&semaphoreP);
+			printf("Found %u solutions!\n", solutions);
+			fflush(stdout);
+			exit(0);
 		}
 		sem_wait(&semaphoreConsumidor);
 		sem_post(&semaphoreSentinela);
@@ -266,7 +269,7 @@ void* sudoku_solver(void* args){
 				if(ind == size_qd-1){
 						sem_wait(&semaphoreCont);
 						solutions++;
-						printf("%u!!!\n", solutions);
+						//printf("%u!!!\n", solutions);
 						//print_sudoku(sudo_r, size);
 						//fflush(stdout);
 						sem_post(&semaphoreCont);
