@@ -27,7 +27,7 @@ unsigned int max_threads = 2;
 unsigned int solutions = 0;
 pthread_mutex_t s_mutex;
 
-/*
+
 int sudo[] = {
 		0,3,0,0,6,0,0,0,5,
 		0,0,0,0,5,0,0,0,0,
@@ -38,8 +38,8 @@ int sudo[] = {
 		0,5,0,8,0,3,0,7,0,
 		0,0,7,0,0,0,0,0,0,
 		4,0,0,0,0,0,0,0,0
-	};*/
-
+	};
+/*
 int sudo[] = {
 		0,2,3,4,5,6,7,8,0,
 		0,0,0,0,0,0,0,0,0,
@@ -51,7 +51,7 @@ int sudo[] = {
 		0,0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,0,
 
-	};
+	};*/
 	/*int sudo[] = {
 		0,0,0,0,0,3,0,1,7,
 		0,1,5,0,0,9,0,0,8,
@@ -244,7 +244,7 @@ void* sudoku_solver(void* args){
 		//print_sudoku(sudo_r, size);
 		//printf("Created thread, ind: %u - value: %u\n", start_ind, start_value);
 		next = true;
-		while(ind/size_sq == 0){
+		while(ind/size_sq == line){
 			if(stack->state[ind]==0){
 				found = false;
 				for(int n = sudo_r[ind]+1; n<size_sq+1; n++){
@@ -255,14 +255,14 @@ void* sudoku_solver(void* args){
 							sudo_r[ind] = n;
 							//print_sudoku(sudo_r, size);
 							//fflush(stdout);
-						print_sudoku(sudo_r,size);
-						printf("%u\n", ind);
+						//print_sudoku(sudo_r,size);
+						//printf("%u\n", ind);
 							break;
 					}
 				}
 				next = found;
 			}
-			if(next){
+			if(found){
 				if(ind == size_qd-1){
 						sem_wait(&semaphoreCont);
 						solutions++;
@@ -271,7 +271,6 @@ void* sudoku_solver(void* args){
 						//fflush(stdout);
 						sem_post(&semaphoreCont);
 						next=false;
-						ind--;
 				} else {
 					//printf("SEG1!!!\n", solutions);
 					//	fflush(stdout);
@@ -290,23 +289,25 @@ void* sudoku_solver(void* args){
 						//fflush(stdout);
 						//printf("%u\n", ind+1);
 						//fflush(stdout);
-						print_sudoku(sudo_r,size);
-						printf("Stack/n");
-						ind--;
+						//print_sudoku(sudo_r,size);
+						//printf("Stack\n");
+						//fflush(stdout);
 						next=false;
-					} else {
-						ind++;
 					}
 				}
-			} else {
+			}
+			if (next) {
+				ind++;
+			}else{
 				if(stack->state[ind]==0){
 					sudo_r[ind] = 0;
 				}
 				ind--;
 			}
 		}
-		print_sudoku(sudo_r,size);
-		printf("%u\n", ind);
+		//print_sudoku(sudo_r,size);
+		//printf("%u\n", ind);
+		//fflush(stdout);
 		free(stack->state);
 		free(sudo_r);
 		sem_wait(&semaphoreSentinela);
