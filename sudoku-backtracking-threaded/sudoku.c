@@ -2,8 +2,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <pthread.h>
+#include <string.h>
 #include "stack.h"
 #include "semaphore.h"
+
+#define MIN(a,b) ((a) < (b) ? a : b)
 
 struct myData{
 	unsigned int start_value;
@@ -13,17 +16,19 @@ struct myData{
 
 int n_threads = 0;
 
-sem_t semaphore;
+sem_t semaphoreSentinela;
 sem_t semaphoreConsumidor;
 sem_t semaphoreP;
 sem_t semaphoreCont;
+pthread_barrier_t barrier;
 Stack s;
 
-unsigned int max_threads = 4;
+unsigned int max_threads = 1000;
 unsigned int solutions = 0;
 pthread_mutex_t s_mutex;
-/*
-int sudo[] = {
+
+
+/*int sudo[] = {
 		0,3,0,0,6,0,0,0,5,
 		0,0,0,0,5,0,0,0,0,
 		0,0,6,1,0,7,9,0,0,
@@ -36,6 +41,7 @@ int sudo[] = {
 	};*/
 /*
 int sudo[] = {
+		0,2,3,4,5,6,7,8,0,
 		0,0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,0,
@@ -44,9 +50,9 @@ int sudo[] = {
 		0,0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,
-		
-	};*//*int sudo[] = {
+
+	};*/
+	/*int sudo[] = {
 		0,0,0,0,0,3,0,1,7,
 		0,1,5,0,0,9,0,0,8,
 		0,6,0,0,0,0,0,0,0,
@@ -58,6 +64,7 @@ int sudo[] = {
 		3,4,0,2,0,0,0,0,0
 		
 	};*/
+/*	
 	int sudo[] = {
 	 1, 3, 8,15, 9, 0,16, 0, 0, 6, 0, 0,13, 7, 0, 0,
 	 0,13, 6, 0, 0,15, 0, 0, 7, 0, 0, 4, 8, 0, 0, 0,
@@ -78,8 +85,8 @@ int sudo[] = {
 	 0, 9, 0, 0, 0, 0, 7, 0, 0,11, 0,16, 14, 0, 0, 0,
 	 0,11, 3, 0,15,12, 0, 0, 8, 0, 0, 0, 0,10, 0, 0,
 	 1, 0, 4, 0, 0, 0, 3, 0, 0, 2, 0, 6,16, 0, 0,15
-};
-/*
+};*/
+
 	int sudo[] = {
 	 0, 0, 0,15, 9, 0,16, 0, 0, 6, 0, 0,13, 7, 0, 0,
 	 0,13, 6, 0, 0,15, 0, 0, 7, 0, 0, 4, 8, 0, 0, 0,
@@ -100,7 +107,7 @@ int sudo[] = {
 	 0, 9, 0, 0, 0, 0, 7, 0, 0,11, 0,16, 14, 0, 0, 0,
 	 0,11, 3, 0,15,12, 0, 0, 8, 0, 0, 0, 0,10, 0, 0,
 	 1, 0, 4, 0, 0, 0, 3, 0, 0, 2, 0, 6,16, 0, 0,15
-};*/
+};
 
 /*	int sudo[] = {
 	0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0,0,0, 0, 0,
@@ -121,27 +128,27 @@ int sudo[] = {
 	0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0,0,0, 0, 0,
 };*/
 
-/*
-int sudo[] = {
+
+/*int sudo[] = {
  0, 1 ,3 ,4, 5, 6, 7, 8,  9, 10, 11, 12,  13, 14, 15, 16, 
  5 ,6 ,7 ,8,1 ,2 ,3 ,4  ,13 ,14 ,15 ,16 , 9 ,10, 11, 12 ,
- 9 ,10 ,11 ,12 , 13, 14 ,15, 16,  1 ,2 ,3 ,4 , 5, 6, 7, 8 ,
- 13, 14, 15, 16,  9, 10 ,11 ,12  ,5, 6, 7 ,8  ,1 ,2 ,3 ,4 ,
- 0 ,2, 4, 3 , 6 ,5, 8, 7 , 10, 9 ,12 ,11 ,14 ,13 ,16 ,15, 
- 6 ,5, 8, 7 , 2 ,1, 4, 3  ,14 ,13 ,16 ,15 ,10, 9 ,12, 11 ,
- 10, 9 ,12 ,11 , 14, 13, 16, 15, 2, 1, 4, 3,  6, 5, 8, 7, 
- 0, 13, 16, 15,  10, 9 ,12 ,11, 6, 5, 8, 0,  2 ,1, 4 ,3, 
- 3 ,4 ,1, 2 , 7 ,8, 5 ,6,  11, 0 ,9 ,10, 15, 16, 13, 14, 
- 7 ,8 ,5, 6 , 3 ,4, 1 ,0 , 15, 16, 13, 14, 11, 12, 9, 10 ,
- 0, 12, 9 ,10 , 15 ,16 ,13, 14 , 3 ,4 ,1 ,2 ,7 ,8 ,5 ,6, 
- 15, 16, 13, 14,  11 ,12 ,9 ,0  ,7 ,8 ,5 ,6 ,3 ,4,1, 2, 
- 4 ,3 ,2, 1 , 8 ,7 ,6, 0,  12, 11 ,10, 9 , 16, 15, 14 ,13, 
- 8 ,7 ,6, 5 , 4 ,0 ,2 ,13 , 16 ,15 ,14 ,1  ,12 ,11 ,10, 9 ,
- 0, 15, 10, 9  ,16 ,11 ,14 ,1 , 4 ,7 ,6 ,13 , 8, 3 ,2 ,5 ,
- 16, 11, 14, 13 , 12 ,15 ,10 ,9  ,8 ,3 ,2 ,5 , 4, 7, 6, 1 
-};
+ 9 ,10 ,11 ,12 , 13, 14 ,15, 16,  1 ,2 ,3 ,4 , 0, 6, 7, 8 ,
+ 13, 14, 15, 16,  9, 10 ,11 ,12  ,5, 6, 7 ,0  ,1 ,2 ,3 ,4 ,
+ 0 ,2, 4, 3 , 6 ,0, 0, 7 , 10, 9 ,12 ,11 ,0 ,0 ,16 ,15, 
+ 6 ,5, 8, 7 , 2 ,0, 0, 3  ,14 ,13 ,16 ,15 ,0, 0 ,12, 11 ,
+ 10, 9 ,12 ,11 , 14, 0, 16, 15, 2, 1, 4, 3,  0, 5, 8, 7, 
+ 0, 13, 16, 15,  10, 0 ,12 ,0, 6, 5, 8, 0,  0 ,1, 4 ,3, 
+ 3 ,4 ,1, 2 , 0 ,8, 0 ,6,  0, 0 ,9 ,0, 0, 0, 0, 14, 
+ 7 ,0 ,0, 6 , 3 ,4, 0 ,0 , 0, 0, 0, 0, 0, 0, 9, 10 ,
+ 0, 0, 0 ,10 , 15 ,0 ,0, 0 , 0 ,0 ,0 ,0 ,7 ,8 ,5 ,6, 
+ 15, 0, 0, 0,  11 ,0 ,9 ,0  ,7 ,8 ,5 ,6 ,3 ,4,1, 2, 
+ 0 ,0 ,0, 0 , 0 ,0 ,0, 0,  0, 0 ,0, 0 , 0, 0, 14 ,13, 
+ 0 ,0 ,0, 0 , 0 ,0 ,0 ,0 , 0,0 ,0 ,0  ,0 ,0 ,10, 9 ,
+ 0, 0, 0, 0  , 0 ,0 ,0 ,0 , 0 , 0 ,6 ,13 , 8, 3 ,2 ,5 ,
+ 16, 11, 14, 13 , 0 ,0 ,0 ,0  ,0 ,0 ,0 ,5 , 4, 7, 6, 1 
+};*/
 
-*/
+
 
 bool valid_in_row(int* array, int x, int index, unsigned int size_sq){
 	for(int i = 0; i<size_sq; i++){
@@ -194,118 +201,122 @@ void print_sudoku(int* array, unsigned int size){
 	sem_post(&semaphoreP);
 }
 
-void deep_copy(int size, int array[], int array_from[]){
-	for(int i=0;i<size;i++){
-		array[i] = array_from[i];
-	}						
-}
-
 void* sudoku_solver(void* args){
-	
-	Data *stack = (Data*)args;
-	unsigned int start_value = stack->start_value;
-	unsigned int start_ind = stack->start_ind;
-	unsigned int size = stack->size;
-	unsigned int size_sq = size*size;
-	unsigned int size_cb = size*size_sq;
-	unsigned int size_qd = size*size_cb;
-	int* sudo_r = malloc(sizeof(int) * size_qd);
-	deep_copy(size_qd, sudo_r,stack->state);
-	unsigned int ind = start_ind+1;
 
-	
+	int* sudo_r;
+	int sem_check;
+	bool found;
+	int next;
 
-	while((stack->state)[ind]!=0){
-		ind++;
-	}
-		//printf("%u \n", ind);
-	if(ind >= size_qd-1){
-		sem_wait(&semaphoreCont);
-		solutions++;
-		fflush(stdout);
-		printf("%u!!!\n", solutions);
-		fflush(stdout);
-		sem_post(&semaphoreCont);
-		sem_post(&semaphore);
-		sem_wait(&semaphoreConsumidor);
-		pthread_exit(NULL);
-	}
-
-	sudo_r[start_ind] = start_value;
-
-	//print_sudoku(sudo_r, size);
-	//printf("Created thread, ind: %u - value: %u\n", start_ind, start_value);
-
-	Data* temp = malloc(sizeof(Data) * size_sq);
-	int* temp_sudoku = malloc(sizeof(int) * size_qd);
-	deep_copy(size_qd, temp_sudoku,sudo_r);	
-	for(int n = 1; n<size_sq+1; n++){
-		if(valid_in_row(sudo_r, n, ind, size_sq) & 
-			valid_in_col(sudo_r, n, ind, size_sq) & 
-			valid_in_sq(sudo_r, n, ind, size)){
-			
-			temp[n-1].state = temp_sudoku;
-			temp[n-1].size = size;
-			temp[n-1].start_value = n;
-			temp[n-1].start_ind = ind;
-			stackpush(&s, &temp[n-1]);
-			//printf("%u!\n", s.size);
+	while(1){
+		
+		sem_getvalue(&semaphoreSentinela, &sem_check);
+		if(s.size==0 && sem_check==max_threads){
+			sem_wait(&semaphoreP);
+			printf("Found %u solutions!\n", solutions);
 			fflush(stdout);
-
+			exit(0);
 		}
+		sem_wait(&semaphoreConsumidor);
+		sem_post(&semaphoreSentinela);
+		Data *stack = stackpop(&s);
+		unsigned int start_ind = stack->start_ind;
+		unsigned int size = stack->size;
+		unsigned int size_sq = size*size;
+		unsigned int size_cb = size*size_sq;
+		unsigned int size_qd = size*size_cb;
+		unsigned int line = start_ind/size_sq;
+		sudo_r = malloc(sizeof(int) * size_qd);
+		memcpy(sudo_r, stack->state, sizeof(int)*size_qd);
+		unsigned int ind = start_ind;
+		fflush(stdout);
+		found = true;
+		next = true;
+		while(ind/size_sq == line){
+			if(stack->state[ind]==0){
+				found = false;
+				for(int n = sudo_r[ind]+1; n < size_sq+1; n++){
+					if(valid_in_row(sudo_r, n, ind, size_sq) & 
+						valid_in_col(sudo_r, n, ind, size_sq) & 
+						valid_in_sq(sudo_r, n, ind, size)){
+							found = true;
+							sudo_r[ind] = n;
+							break;
+					}
+				}
+				next = found;
+			}
+			if(found){
+				if(ind == size_qd-1){
+						sem_wait(&semaphoreCont);
+						solutions++;
+						sem_post(&semaphoreCont);
+						next=false;
+				} else {
+					if((ind+1)/size_sq > line){
+						int* temp_sudoku = malloc(sizeof(int) * size_qd);
+						memcpy(temp_sudoku, sudo_r, sizeof(int) * size_qd);
+						Data* temp = malloc(sizeof(Data));
+						temp->state = temp_sudoku;
+						temp->size = size;
+						temp->start_ind = ind+1;
+						stackpush(&s, temp);;
+						sem_post(&semaphoreConsumidor);
+						next=false;
+					}
+				}
+			}
+			if (next) {
+				ind++;
+			} else {
+				if(stack->state[ind]==0){
+					sudo_r[ind] = 0;
+				}
+				ind--;
+			}
+		}
+		free(stack->state);
+		free(sudo_r);
+		sem_wait(&semaphoreSentinela);
 	}
-	sem_post(&semaphore);
-	sem_wait(&semaphoreConsumidor);
-	pthread_exit(NULL);
 }
 
 int main(){
 	stackinit(&s);
 	unsigned int sudo_size = 4;
-	sem_init(&semaphore, 0, 1000);
-	sem_init(&semaphoreConsumidor, 0, 0);
+	unsigned int sudo_size_4 = sudo_size*sudo_size*sudo_size*sudo_size;
+	sem_init(&semaphoreConsumidor, 0, 1);
+	sem_init(&semaphoreSentinela, 0, max_threads);
 	sem_init(&semaphoreCont, 0, 1);
 	sem_init(&semaphoreP, 0, 1);
+	pthread_barrier_init(&barrier, NULL, 10);
 	pthread_mutex_init(&s_mutex, NULL);
-	Data datas[sudo_size*sudo_size];
-	//printf("Creating threads\n");
+	
+	printf("Initialized structures\n");
 	fflush(stdout);
 	
-	for(int n = 1; n<(sudo_size*sudo_size)+1; n++){
-		if(valid_in_row(sudo, n, 0, sudo_size*sudo_size) & 
-			valid_in_col(sudo, n, 0, sudo_size*sudo_size) & 
-			valid_in_sq(sudo, n, 0, sudo_size)){
-			datas[n-1].state = sudo;
-			datas[n-1].size = sudo_size;
-			datas[n-1].start_value = n;
-			datas[n-1].start_ind = 0;
-			fflush(stdout);
-			stackpush(&s, &datas[n-1]);
-		}
+	Data initial_data;
+	int* ini_array = malloc(sizeof(int)*(sudo_size_4));
+	memcpy(ini_array, sudo, sizeof(int)*(sudo_size_4));
+	initial_data.state = ini_array;
+	initial_data.size = sudo_size;
+	initial_data.start_ind = 0;	
+	stackpush(&s, &initial_data);
+
+	printf("Created first stack entry\n");
+	fflush(stdout);
+	
+	pthread_t threads[max_threads];
+	for(int i=0; i<max_threads; i++){
+		pthread_create(&threads[i], NULL, sudoku_solver, NULL);
 	}
-	//printf("Done creating initial set!\n");
+	
+	printf("Created threads\n");
 	fflush(stdout);
-	pthread_t* thread_ptr = malloc(sizeof(pthread_t));
-	fflush(stdout);
-	int sem_check;
-	do{
-		while(!(s.size == 0)) {
-			sem_wait(&semaphore);
-			sem_getvalue(&semaphoreConsumidor, &sem_check);
-			//printf("%u!\n", sem_check);
-			pthread_t temp_thread;
-			thread_ptr = &temp_thread;
-			pthread_create(thread_ptr, NULL, sudoku_solver, (void*)stackpop(&s));
-			//pthread_join(temp_thread, NULL);
-			//printf("%u!\n", s.size);
-			//fflush(stdout);
-			sem_post(&semaphoreConsumidor);
-		};
-		sem_getvalue(&semaphoreConsumidor, &sem_check);
-		printf("%Huh!\n", sem_check);
-		printf("Sem - %u! : Stack - %u\n", sem_check, s.size);
-	} while(sem_check>0);
-	printf("%u!\n", solutions);
+	
+	pthread_barrier_wait(&barrier);
+	
+	printf("Found %u solutions.\n", solutions);
 	fflush(stdout);
 	pthread_mutex_destroy(&s_mutex);
 }
