@@ -103,8 +103,8 @@ void* sudoku_solver(void* args){
 
 		// mudei o criterio, mas dai não achou todas as soluções
 		unsigned int start_line = (start_ind/size_sq);//*s.multiplier;
-		unsigned int criterio = (start_ind/size_sq)+s.size*size_sq/s.threshold;
-		printf("Size %u  -- Lines %u\n",s.size, s.size*size_sq/s.threshold);
+		unsigned int criterio = (start_ind/size_sq)+s.size*size_sq/(2000000000/sizeof(unsigned char) * size_qd);
+		printf("Size %u  -- Lines %u\n",sizeof(unsigned char) * size_qd, s.size*size_sq/s.threshold);
 		fflush(stdout);
 		unsigned int ind = start_ind;
 		sudo_r = malloc(sizeof(unsigned char) * size_qd);
@@ -130,6 +130,8 @@ void* sudoku_solver(void* args){
 				if(ind == size_qd-1){
 						sem_wait(&semaphoreCont);
 						solutions++;
+						printf("%u\n", solutions);
+						fflush(stdout);
 						sem_post(&semaphoreCont);
 						next=false;
 				} else {
