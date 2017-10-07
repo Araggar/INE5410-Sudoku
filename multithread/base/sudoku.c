@@ -101,11 +101,10 @@ void* sudoku_solver(void* args){
 		Data *stack = stackpop(&s);
 		unsigned int start_ind = stack->start_ind;
 
-		// mudei o criterio, mas dai não achou todas as soluções
 		unsigned int start_line = (start_ind/size_sq);//*s.multiplier;
-		unsigned int criterio = (start_ind/size_sq)+s.size*size_sq/(2000000000/sizeof(unsigned char) * size_qd);
-		printf("Size %u  -- Lines %u\n",sizeof(unsigned char) * size_qd, s.size*size_sq/s.threshold);
-		fflush(stdout);
+		unsigned int criterio = (start_ind/size_sq)+size_sq*size_qd*s.size/2000000000;
+		//printf("Size %u  -- Lines %u\n",s.size, size_sq*size_qd*s.size/2000000000);
+		//fflush(stdout);
 		unsigned int ind = start_ind;
 		sudo_r = malloc(sizeof(unsigned char) * size_qd);
 		memcpy(sudo_r, stack->state, sizeof(unsigned char)*size_qd);
