@@ -3,8 +3,7 @@
 void stackinit(Stack * stack){
         stack->top = NULL;
 		stack->size = 0;
-		stack->multiplier = 1;
-		stack->threshold = 1000000;
+		stack->threshold = 2000000;
 		pthread_mutex_init(&stack->mutex, NULL);
 }
 
@@ -22,8 +21,6 @@ void stackpush(Stack * stack, Data * data){
 		temp->next = stack->top;
         stack->top = temp;
 		stack->size += 1;
-		if (stack->size > stack->threshold*stack->multiplier)
-			stack->multiplier++;
 		pthread_mutex_unlock(&stack->mutex);
 }
 
@@ -40,11 +37,6 @@ Data * stackpop(Stack * stack){
 	stack->top = stack->top->next;
 	free(temp);
 	stack->size += -1;
-	if (stack->size < stack->threshold*stack->multiplier 
-		&& stack->size > stack->threshold*(stack->multiplier-1)
-		&& stack->multiplier-1 > 0) {
-			stack->multiplier--;
-		}
 	pthread_mutex_unlock(&stack->mutex);
 	return data;
 }
@@ -55,4 +47,6 @@ void stackdispose(Stack * stack){
         	stackpop(stack);
 		pthread_mutex_unlock(&stack->mutex);
 }
+
+
 
