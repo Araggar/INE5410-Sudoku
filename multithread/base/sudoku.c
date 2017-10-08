@@ -16,14 +16,14 @@ sem_t semaphoreCont;
 pthread_barrier_t barrier;
 Stack s;
 
-unsigned int size = 3;
+unsigned int size = 4;
 unsigned int size_sq;
 unsigned int size_cb;
 unsigned int size_qd;
 
 unsigned int max_threads;
 unsigned int solutions = 0;
-
+/*
 unsigned char sudo[] = {
 		0,3,0,0,6,0,0,0,5,
 		0,0,0,0,5,0,0,0,0,
@@ -34,8 +34,8 @@ unsigned char sudo[] = {
 		0,5,0,8,0,3,0,7,0,
 		0,0,7,0,0,0,0,0,0,
 		4,0,0,0,0,0,0,0,6
-};
-/*
+};*/
+
 unsigned char sudo[] = {
 	 0, 0, 0,15, 9, 0,16, 0, 0, 6, 0, 0,13, 7, 0, 0,
 	 0,13, 6, 0, 0,15, 0, 0, 7, 0, 0, 4, 8, 0, 0, 0,
@@ -53,7 +53,7 @@ unsigned char sudo[] = {
 	 0, 9, 0, 0, 0, 0, 7, 0, 0,11, 0,16, 4, 0, 0, 0,
 	 0,11, 3, 0,15,12, 0, 0, 8, 0, 0, 0, 0,10, 0, 0,
 	 1, 0, 4, 0, 0, 0, 3, 0, 0, 2, 0, 6,16, 0, 0,15
-};*/
+};
 
 bool valid_in_row(unsigned char* array, unsigned char x, int index){
 	for(int i = 0; i < size_sq; i++){
@@ -101,15 +101,17 @@ void* sudoku_solver(void* args){
 		Data *stack = stackpop(&s);
 		unsigned int start_ind = stack->start_ind;
 
-		// mudei o criterio, mas dai não achou todas as soluções
-		unsigned int criterio = (start_ind/size_sq)*s.multiplier;
+		unsigned int start_line = (start_ind/size_sq);//*s.multiplier;
+		unsigned int criterio = (start_ind/size_sq)+size_sq*size_qd*s.size/2000000000;
+		//printf("Size %u  -- Lines %u\n",s.size, size_sq*size_qd*s.size/2000000000);
+		//fflush(stdout);
 		unsigned int ind = start_ind;
 		sudo_r = malloc(sizeof(unsigned char) * size_qd);
 		memcpy(sudo_r, stack->state, sizeof(unsigned char)*size_qd);
 
 		found = true;
 		next = true;
-		while(ind/size_sq == criterio){
+		while(ind/size_sq >= start_line && ind/size_sq <= criterio){
 			if(stack->state[ind] == 0){
 				found = false;
 				for(unsigned char n = sudo_r[ind]+1; n < size_sq+1; n++){
@@ -127,6 +129,8 @@ void* sudoku_solver(void* args){
 				if(ind == size_qd-1){
 						sem_wait(&semaphoreCont);
 						solutions++;
+						printf("%u\n", solutions);
+						fflush(stdout);
 						sem_post(&semaphoreCont);
 						next=false;
 				} else {
